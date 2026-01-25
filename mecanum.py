@@ -23,7 +23,7 @@ def front_left(speed):
         pca.pwm(2, 4095 + speed)
         pca.pwm(3, 4095)
 
-def back_left(speed):
+def back_right(speed):
     if speed > 0:
         pca.pwm(5, 4095)
         pca.pwm(4, 4095 - speed)
@@ -31,7 +31,7 @@ def back_left(speed):
         pca.pwm(5, 4095 + speed)
         pca.pwm(4, 4095)
 
-def back_right(speed):
+def back_left(speed):
     if speed > 0:
         pca.pwm(7, 4095)
         pca.pwm(6, 4095 - speed)
@@ -61,9 +61,4 @@ def claw_open():
 def claw_close():
     pca.servo_deg(15, 90)
 
-# arm(170)
-# claw_close()
-# claw_open()
-# back_left(1000)
-pca.pwm(4, 0)
-pca.pwm(5, 1000)
+
