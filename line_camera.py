@@ -7,14 +7,17 @@ import math
 # Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
 # The below thresholds track in general red/green things. You may wish to tune them...
 thresholds = [
-    (0, 5, -7, -2, 0, 5), # black threshold
+(7, 32, -18, -6, -1, 12), # black threshold
+(46, 63, -54, -34, 36, 54), # green threshold
+#(95, 100, -40, 40, -40, 40), # reflective tape threshold
 ]
 
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 sensor.skip_frames(time=2000)
-sensor.set_auto_gain(False)  # must be turned off for color tracking
+sensor.set_auto_gain(False, gain_db=3) # must be turned off for color tracking
+# sensor.set_auto_gain(True)
 sensor.set_auto_whitebal(False)  # must be turned off for color tracking
 clock = time.clock()
 
@@ -26,7 +29,7 @@ def get_line():
     cblob_cx = 160
     ublob_cx = 160
     img = sensor.snapshot()
-    black_blobs_center = img.find_blobs(thresholds, pixels_threshold=200, area_threshold=200, roi=(0,90,320,60))
+    black_blobs_center = img.find_blobs(thresholds, pixels_threshold=200, area_threshold=200, roi=(38,90,244,60))
     largest_center_blob_area = 0
 
     for blob in black_blobs_center:
@@ -47,7 +50,7 @@ def get_line():
             largest_center_blob_area = blob.area()
             cblob_cx = blob.cx()
 
-    black_blobs_upper = img.find_blobs(thresholds, pixels_threshold=200, area_threshold=200, roi=(0,0,320,60))
+    black_blobs_upper = img.find_blobs(thresholds, pixels_threshold=200, area_threshold=200, roi=(50,0,220,60))
     largest_upper_blob_area = 0
 
     for blob in black_blobs_upper:
@@ -77,6 +80,6 @@ def get_line():
 
     return cblob_x_offset, angle / math.pi * 180 - 90
 
-while True:
-    cblob_offset, angle = get_line()
-    print(cblob_offset, angle)
+# while True:
+#     cblob_offset, angle = get_line()
+#     print(cblob_offset, angle)
