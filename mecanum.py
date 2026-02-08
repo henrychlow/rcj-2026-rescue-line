@@ -43,10 +43,21 @@ def drive(x, y, r):
     v14 = 1 / 2**0.5 * (y + x)
     v14y = v14 / 2**0.5
     v23 = 2**0.5 * (y - v14y)
-    front_left(v14 - r)
-    back_right(v14 + r)
-    front_right(v23 + r)
-    back_left(v23 - r)
+    v1 = v14 -r
+    v4 = v14 + r
+    v2 = v23 + r
+    v3 = v23 - r
+    max_v = max(abs(v1), abs(v2), abs(v3), abs(v4))
+    if max_v > 4095:
+        v1 *= (4095 / max_v)
+        v2 *= (4095 / max_v)
+        v3 *= (4095 / max_v)
+        v4 *= (4095 / max_v)
+
+    front_left(v1)
+    back_right(v4)
+    front_right(v2)
+    back_left(v3)
 
 def arm(angle):
     if angle > 170:

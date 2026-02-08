@@ -7,7 +7,7 @@ import math
 # Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
 # The below thresholds track in general red/green things. You may wish to tune them...
 thresholds = [
-(7, 32, -18, -6, -1, 12), # black threshold
+(3, 50, -18, 1, -1, 13), # black threshold
 (46, 63, -54, -34, 36, 54), # green threshold
 #(95, 100, -40, 40, -40, 40), # reflective tape threshold
 ]
@@ -17,6 +17,7 @@ sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 sensor.skip_frames(time=2000)
 sensor.set_auto_gain(False, gain_db=3) # must be turned off for color tracking
+# sensor.set_auto_gain(False, gain_db=30)
 # sensor.set_auto_gain(True)
 sensor.set_auto_whitebal(False)  # must be turned off for color tracking
 clock = time.clock()
@@ -52,6 +53,12 @@ def get_line():
 
     black_blobs_upper = img.find_blobs(thresholds, pixels_threshold=200, area_threshold=200, roi=(50,0,220,60))
     largest_upper_blob_area = 0
+    min_x = 320
+    min_y = 240
+    max_x = -1
+    max_y = -1
+    total_cx = 0
+    total_pixels = 0
 
     for blob in black_blobs_upper:
         # These values depend on the blob not being circular - otherwise they will be shaky.
@@ -67,9 +74,29 @@ def get_line():
             [(blob.cx(), blob.cy(), int(math.degrees(blob.rotation())))], size=20
         )
 
-        if blob.area() > largest_upper_blob_area:
-            largest_upper_blob_area = blob.area()
-            ublob_cx = blob.cx()
+        # if blob.area() > largest_upper_blob_area:
+        #     largest_upper_blob_area = blob.area()
+        #     ublob_cx = blob.cx()
+        if blob.x() < min_x:
+            min_x = blob.x()
+        if blob.y() < min_y:
+            min_y = blob.y()
+        x2 = blob.x() + blob.w()
+        y2 = blob.y() + blob.h()
+        if x2 > max_x:
+            max_x = x2
+        if y2 > max_y:
+            max_y = y2
+        total_cx += blob.cx() * blob.pixels()
+        total_pixels += blob.pixels()
+
+    if max_x != -1:
+        img.draw_rectangle([min_x, min_y, max_x-min_x, max_y-min_y])
+        img.draw_cross((max_x+min_x) // 2, (max_y+min_y) // 2)
+        # ublob_cx = (max_x+min_x) / 2
+        ublob_cx = total_cx / total_pixels
+
+
 
     cblob_x_offset_pixel = cblob_cx - 160
     cblob_x_offset = (1/160) * cblob_x_offset_pixel
