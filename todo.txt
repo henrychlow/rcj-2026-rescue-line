@@ -1,0 +1,7 @@
+KIV:
+    1. rescue zone
+
+15/2/2026 to do:
+    1. cross the gap
+    2. detect green + turn
+    3. obstacles
