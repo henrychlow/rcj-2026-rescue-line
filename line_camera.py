@@ -7,7 +7,7 @@ import math
 # Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
 # The below thresholds track in general red/green things. You may wish to tune them...
 thresholds = [
-(3, 50, -18, 1, -1, 13), # black threshold
+(3, 40, -18, 1, -1, 13), # black threshold
 (46, 63, -54, -34, 36, 54), # green threshold
 #(95, 100, -40, 40, -40, 40), # reflective tape threshold
 ]
@@ -28,7 +28,8 @@ clock = time.clock()
 
 def get_line():
     cblob_cx = 160
-    ublob_cx = 160
+    ublob_cx = -1
+
     img = sensor.snapshot()
     black_blobs_center = img.find_blobs(thresholds, pixels_threshold=200, area_threshold=200, roi=(38,90,244,60))
     largest_center_blob_area = 0
@@ -52,7 +53,6 @@ def get_line():
             cblob_cx = blob.cx()
 
     black_blobs_upper = img.find_blobs(thresholds, pixels_threshold=200, area_threshold=200, roi=(50,0,220,60))
-    largest_upper_blob_area = 0
     min_x = 320
     min_y = 240
     max_x = -1
@@ -101,11 +101,14 @@ def get_line():
     cblob_x_offset_pixel = cblob_cx - 160
     cblob_x_offset = (1/160) * cblob_x_offset_pixel
 
-    ublob_x_offset_pixel = ublob_cx - 160
+    if ublob_cx == -1:
+        angle = 0
+    else:
+        ublob_x_offset_pixel = ublob_cx - 160
+        angle = math.atan2(90, ublob_x_offset_pixel - cblob_x_offset_pixel)
+        angle = angle / math.pi * 180 - 90
 
-    angle = math.atan2(90, ublob_x_offset_pixel - cblob_x_offset_pixel)
-
-    return cblob_x_offset, angle / math.pi * 180 - 90
+    return cblob_x_offset, angle
 
 # while True:
 #     cblob_offset, angle = get_line()
