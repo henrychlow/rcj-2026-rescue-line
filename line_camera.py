@@ -6,9 +6,12 @@ import math
 
 # Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
 # The below thresholds track in general red/green things. You may wish to tune them...
-thresholds = [
+thresholds_black = [
 (3, 40, -18, 1, -1, 13), # black threshold
-(46, 63, -54, -34, 36, 54), # green threshold
+#(95, 100, -40, 40, -40, 40), # reflective tape threshold
+]
+thresholds_green = [
+(35, 60, -54, -34, 35, 54), # green threshold
 #(95, 100, -40, 40, -40, 40), # reflective tape threshold
 ]
 
@@ -29,9 +32,11 @@ clock = time.clock()
 def get_line():
     cblob_cx = 160
     ublob_cx = -1
+    ublob_max_x = 320
+    ublob_min_x = 0
 
     img = sensor.snapshot()
-    black_blobs_center = img.find_blobs(thresholds, pixels_threshold=200, area_threshold=200, roi=(38,90,244,60))
+    black_blobs_center = img.find_blobs(thresholds_black, pixels_threshold=200, area_threshold=200, roi=(38,90,244,60))
     largest_center_blob_area = 0
 
     for blob in black_blobs_center:
@@ -52,7 +57,7 @@ def get_line():
             largest_center_blob_area = blob.area()
             cblob_cx = blob.cx()
 
-    black_blobs_upper = img.find_blobs(thresholds, pixels_threshold=200, area_threshold=200, roi=(50,0,220,60))
+    black_blobs_upper = img.find_blobs(thresholds_black, pixels_threshold=200, area_threshold=200, roi=(50,0,220,60))
     min_x = 320
     min_y = 240
     max_x = -1
@@ -95,11 +100,42 @@ def get_line():
         img.draw_cross((max_x+min_x) // 2, (max_y+min_y) // 2)
         # ublob_cx = (max_x+min_x) / 2
         ublob_cx = total_cx / total_pixels
+        ublob_min_x = min_x
+        ublob_max_x = max_x
 
+    green_blobs = img.find_blobs(thresholds_green, pixels_threshold=200, area_threshold=200, roi=[0,80,320,80])
+    for blob in green_blobs:
+        # These values depend on the blob not being circular - otherwise they will be shaky.
+        if blob.elongation() > 0.5:
+            img.draw_edges(blob.min_corners(), color=(255, 0, 0))
+            img.draw_line(blob.major_axis_line(), color=(0, 255, 0))
+            img.draw_line(blob.minor_axis_line(), color=(0, 0, 255))
+        # These values are stable all the time.
+        img.draw_rectangle(blob.rect())
+        img.draw_cross(blob.cx(), blob.cy())
+        # Note - the blob rotation is unique to 0-180 only.
+        img.draw_keypoints(
+            [(blob.cx(), blob.cy(), int(math.degrees(blob.rotation())))], size=20
+        )
 
 
     cblob_x_offset_pixel = cblob_cx - 160
     cblob_x_offset = (1/160) * cblob_x_offset_pixel
+
+    turn180 = False
+    if not green_blobs:
+        pass
+    elif len(green_blobs) >= 2:
+        green_blobs_cx = []
+        for blob in green_blobs:
+            green_blobs_cx.append(blob.cx())
+        if min(green_blobs_cx) < ublob_cx and max(green_blobs_cx) > ublob_cx:
+            turn180 = True
+    else:
+        if green_blobs[0].cx() > ublob_cx:
+            ublob_cx = ublob_max_x - 40
+        elif green_blobs[0].cx() < ublob_cx:
+            ublob_cx = ublob_min_x + 40
 
     if ublob_cx == -1:
         angle = 0
@@ -107,8 +143,9 @@ def get_line():
         ublob_x_offset_pixel = ublob_cx - 160
         angle = math.atan2(90, ublob_x_offset_pixel - cblob_x_offset_pixel)
         angle = angle / math.pi * 180 - 90
+        # print(ublob_cx, cblob_x_offset_pixel)
 
-    return cblob_x_offset, angle
+    return cblob_x_offset, angle, turn180
 
 # while True:
 #     cblob_offset, angle = get_line()

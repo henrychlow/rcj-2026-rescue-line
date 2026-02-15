@@ -1,6 +1,10 @@
 KIV:
     1. rescue zone
 
+22/2/2026 to do:
+    1. turn 180 deg at double green
+    2. obstacles if have time
+
 15/2/2026 to do:
     1. cross the gap
     2. detect green + turn
