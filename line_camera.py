@@ -125,16 +125,15 @@ def get_line():
     turn180 = False
     if not green_blobs:
         pass
-    elif len(green_blobs) >= 2:
+    else:
         green_blobs_cx = []
         for blob in green_blobs:
             green_blobs_cx.append(blob.cx())
         if min(green_blobs_cx) < ublob_cx and max(green_blobs_cx) > ublob_cx:
             turn180 = True
-    else:
-        if green_blobs[0].cx() > ublob_cx:
+        elif max(green_blobs_cx) > ublob_cx:
             ublob_cx = ublob_max_x - 40
-        elif green_blobs[0].cx() < ublob_cx:
+        elif min(green_blobs_cx) < ublob_cx:
             ublob_cx = ublob_min_x + 40
 
     if ublob_cx == -1:
@@ -145,7 +144,16 @@ def get_line():
         angle = angle / math.pi * 180 - 90
         # print(ublob_cx, cblob_x_offset_pixel)
 
-    return cblob_x_offset, angle, turn180
+    upper_blobs_mins = []
+    upper_blobs_maxs = []
+    double_black = False
+    for ublob in black_blobs_upper:
+        upper_blobs_mins.append(ublob.x())
+        upper_blobs_maxs.append(ublob.x() + ublob.w())
+    if max(upper_blobs_maxs) - min(upper_blobs_mins) > 200:
+        double_black = True
+
+    return cblob_x_offset, angle, turn180, double_black
 
 # while True:
 #     cblob_offset, angle = get_line()
