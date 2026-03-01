@@ -150,8 +150,9 @@ def get_line():
     for ublob in black_blobs_upper:
         upper_blobs_mins.append(ublob.x())
         upper_blobs_maxs.append(ublob.x() + ublob.w())
-    if max(upper_blobs_maxs) - min(upper_blobs_mins) > 200:
-        double_black = True
+    if len(upper_blobs_mins) != 0:
+        if max(upper_blobs_maxs) - min(upper_blobs_mins) > 200:
+            double_black = True
 
     return cblob_x_offset, angle, turn180, double_black
 

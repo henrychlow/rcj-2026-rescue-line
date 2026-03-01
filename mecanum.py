@@ -1,11 +1,11 @@
 import pca9685
-from machine import I2C
 
-i2c = I2C(2)
-pca = pca9685.PCA9685(i2c)
-pca.set_frequency(50)
+pca = None
 
-
+def init(i2c):
+    global pca
+    pca = pca9685.PCA9685(i2c)
+    pca.set_frequency(50)
 
 def front_right(speed):
     if speed > 0:
